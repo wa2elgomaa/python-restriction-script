@@ -1,12 +1,9 @@
 from os import makedirs, path
 from traceback import format_exception
-from datetime import datetime
+from datetime import datetime, time
 
 
 class Logger:
-    logs_folder = 'restriction-logs'
-    logs_file_prefix = 'logs-'
-
     def __init__(self):
         self.logs_folder = 'restriction-logs'
         self.logs_file_prefix = 'logs-'
@@ -29,12 +26,13 @@ class Logger:
         return format_exception(ex.__class__, ex, ex_traceback)
 
     def log_message(self, message, e=None):
-        print(f'---LOG--- {message}')
+        log_msg = f'{datetime.now()} : ---LOG--- {message}'
+        print(log_msg)
 
         # create logs folder if not exists
         self.create_folder(self.logs_folder)
         # log the error in a separate file
-        with open(f'{self.logs_folder}/{self.logs_file_prefix}{datetime.today().strftime("%Y-%m-%d")}.txt', 'a+',
+        with open(f'{self.logs_folder}/{self.logs_file_prefix}{time().strftime("%Y-%m-%d")}.txt', 'a+',
                   encoding='utf-8') as f:
             # Move read cursor to the start of file.
             f.seek(0)
@@ -42,7 +40,7 @@ class Logger:
             txt = f.read(100)
             if len(txt) > 0:
                 f.write('\n')
-            f.write(message)
+            f.write(log_msg)
             if e:
                 f.write('\n')
                 f.write(f'Error : {self.get_traceback(e)}')
