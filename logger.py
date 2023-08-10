@@ -4,9 +4,10 @@ from datetime import datetime, time
 
 
 class Logger:
-    def __init__(self):
+    def __init__(self, debug_mode=False):
         self.logs_folder = 'restriction-logs'
         self.logs_file_prefix = 'logs-'
+        self.debug = debug_mode
 
     def create_folder(self, output_folder):
         # create output folder if not exists
@@ -28,7 +29,8 @@ class Logger:
     def log_message(self, message, e=None):
         log_msg = f'{datetime.now()} : ---LOG--- {message}'
         print(log_msg)
-
+        if self.debug and e is not None:
+            print(f'{time().strftime("%Y-%m-%d")} : Exception ', e)
         # create logs folder if not exists
         self.create_folder(self.logs_folder)
         # log the error in a separate file

@@ -17,20 +17,21 @@ def install():
 
 
 def start_task():
-    # install dependencies
-    install()
-
     # user inputs
     parser = ArgumentParser(
         prog='XML Script', description='Updating XML files per folder updates')
     parser.add_argument(
         '-env', nargs='*', help='A folder contains NewsML XML files.')
-    args = parser.parse_args(args=argv[1:])
+    parser.add_argument(
+        '-debug', nargs='*', help='Enable debug mode.')
+
+    args = parser.parse_args(args=argv[2:])
     env = args.env[0] if args.env is not None and len(args.env) > 0 else 'sandbox'
+    debug = args.debug[0] if args.debug is not None and len(args.debug) > 0 else False
     # photo center wrapper
-    handler = Handler(env)
+    handler = Handler(env, debug)
     # start date 1 month back
-    start_date = int((datetime.now() - timedelta(days=days)).timestamp() * 1000)
+    start_date = int((datetime.now() - timedelta(days=days)).replace(hour=0, minute=0).timestamp() * 1000)
     # end date now
     end_date = int(datetime.now().timestamp() * 1000)
 

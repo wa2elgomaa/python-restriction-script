@@ -15,8 +15,11 @@ class Requester:
             if payload is None:
                 payload = {}
             response_api = request('GET', url, headers=self.headers, data=payload)
-            response = json.loads(response_api.text)
-            return response
+            if response_api.status_code == 200:
+                response = json.loads(response_api.text)
+                return response
+            else:
+                return {'error': response_api.reason}
         except Exception as e:
             raise e
 
@@ -25,7 +28,10 @@ class Requester:
             if payload is None:
                 payload = {}
             response_api = request('PUT', url, headers=self.headers, data=json.dumps(payload))
-            response = json.loads(response_api.text)
+            if response_api.status_code == 200:
+                response = json.loads(response_api.text)
+            else:
+                return {'error': response_api.reason}
             return response
         except Exception as e:
             raise e

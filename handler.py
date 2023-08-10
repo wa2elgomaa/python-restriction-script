@@ -1,4 +1,5 @@
 """ handler.py """
+import time
 from datetime import datetime
 from traceback import print_exc
 from pydash import get, set_with
@@ -12,12 +13,12 @@ class Handler:
     sources = ['AFP', 'Bloomberg', 'Reuters', 'Associated Press']
     source_type = 'wires'
 
-    def __init__(self, environment):
+    def __init__(self, environment, debug=False):
         self.photos_list = []
         self.environment = environment
         env_file = '.env.sandbox' if environment == 'sandbox' else '.env'
         self.env_config = dotenv_values(env_file)
-        self.logger = Logger()
+        self.logger = Logger(debug_mode=debug)
 
         self.requester = Requester(self.env_config)
 
@@ -25,12 +26,18 @@ class Handler:
         url = f'{self.env_config.get("API_BASE")}/photo/api/v2/photos/?offset={offset}&limit={limit}&published=true' \
               f'{self.env_config.get("SOURCES")}&sort=created_date&quality=1&total=1&restricted=false' \
               f'&startDateUploaded={start_date}&endDateUploaded={end_date}'
-        self.logger.log_message(f'Requesting query ==> {url}')
+        self.logger.log_message(f'Requesting query : {url}')
 
         try:
-            self.photos_list = self.requester.fetch(url=url)
+            response = self.requester.fetch(url=url)
+            if get(response, 'error', None) is None:
+                self.photos_list = response
+                self.logger.log_message(f'Loaded the photos list with length {len(self.photos_list)}')
+            else:
+                self.logger.log_message(f'Failed to load photos list {get(response, "error")}')
 
-        except Exception as e:
+        except any as e:
+            print(e)
             msg = f'ERR loading photos list {url} with error {print_exc()}'
             self.logger.log_message(msg, e)
 
@@ -41,7 +48,9 @@ class Handler:
             url = f'{self.env_config.get("API_BASE")}/photo/api/v2/photos/{get(photo, "_id")}'
             response = self.requester.put(url, photo)
             return response
-        except Exception as e:
+        except any as e:
+            print(e)
+            self.logger.log_message(f'Saving photo error {print_exc()}', e)
             raise e
 
     def restrict(self, photo=None):
@@ -72,7 +81,8 @@ class Handler:
                     self.logger.log_message(f'Photo {get(photo , "_id")} '
                                             f'failed to update with error {get(response, "error")}')
                 return True
-            except Exception as e:
+            except any as e:
+                print(e)
                 msg = f'ERR restricting photo {get(photo , "_id")} with error {print_exc()}'
                 self.logger.log_message(msg, e)
 
@@ -85,12 +95,14 @@ class Handler:
                 for photo in self.photos_list:
                     if photo['_id'] is not None:
                         self.logger.log_message(f'Processing Image {photo["_id"]}')
+                        time.sleep(2)
                         # restrict this photo
                         self.restrict(photo)
                 return False
             else:
                 return True
-        except Exception as e:
+        except any as e:
+            print(e)
             msg = f'ERR while processing photos with error {print_exc()}'
             self.logger.log_message(msg, e)
         return False
