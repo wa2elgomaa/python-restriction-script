@@ -27,20 +27,29 @@ def start_task():
         '-start-from', nargs='*', help='How many days backward i.e. 14.')
     parser.add_argument(
         '-end-to', nargs='*', help='How many days forward, should provide startfrom')
+    parser.add_argument(
+        '-upload-start-date', nargs='*', help='Uploaded start date to run the script manually')
+    parser.add_argument(
+        '-upload-end-date', nargs='*', help='Uploaded end date to run the script manually')
+
     args = parser.parse_args(args=argv[2:])
 
     env = args.env[0] if args.env is not None and len(args.env) > 0 else 'sandbox'
     debug = True if args.debug is not None else False
     start_from = args.start_from[0] if args.start_from is not None else 1
     end_to = args.end_to[0] if args.end_to is not None else 1
+    upload_start_date = args.upload_start_date[0] if args.upload_start_date is not None else None
+    upload_end_date = args.upload_end_date[0] if args.upload_end_date is not None else None
     handler = Handler(env, debug)
-    calculated_date = (datetime.now() - timedelta(days=int(start_from))).replace(hour=0, minute=0, second=0)
-    start_date = int(calculated_date.timestamp() * 1000)
-    # end_date = int(datetime.now().timestamp() * 1000)
-    end_date = int(
-        (calculated_date + timedelta(days=int(end_to))).replace(hour=0, minute=0, second=0).timestamp() * 1000)
-    empty = False
 
+    # calculate the start and end date based on inputs
+    calculated_date = (datetime.now() - timedelta(days=int(start_from))).replace(hour=0, minute=0, second=0)
+    start_date = upload_start_date if upload_start_date is not None else int(calculated_date.timestamp() * 1000)
+    # end_date = int(datetime.now().timestamp() * 1000)
+    end_date = upload_end_date if upload_end_date is not None else int(
+        (calculated_date + timedelta(days=int(end_to))).replace(hour=0, minute=0, second=0).timestamp() * 1000)
+
+    empty = False
     # update photos list
     while empty is False:
         empty = handler.search(start_date, end_date).update()

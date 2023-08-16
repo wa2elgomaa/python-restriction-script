@@ -30,11 +30,11 @@ class Logger:
         log_msg = f'{datetime.now()} : ---LOG--- {message}'
         print(log_msg)
         if self.debug and e is not None:
-            print(f'{time().strftime("%Y-%m-%d")} : Exception ', e)
+            print(f'{datetime.now().strftime("%Y-%m-%d")} : Exception ', e)
         # create logs folder if not exists
         self.create_folder(self.logs_folder)
         # log the error in a separate file
-        with open(f'{self.logs_folder}/{self.logs_file_prefix}{time().strftime("%Y-%m-%d")}.txt', 'a+',
+        with open(f'{self.logs_folder}/{self.logs_file_prefix}{datetime.now().strftime("%Y-%m-%d")}.txt', 'a+',
                   encoding='utf-8') as f:
             # Move read cursor to the start of file.
             f.seek(0)
