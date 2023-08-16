@@ -16,7 +16,7 @@ class Handler:
     def __init__(self, environment, debug=False):
         self.photos_list = []
         self.environment = environment
-        env_file = '.env.sandbox' if environment == 'sandbox' else '.env'
+        env_file = '.env' if environment == 'prod' else '.env.sandbox'
         self.env_config = dotenv_values(env_file)
         self.logger = Logger(debug_mode=debug)
 
